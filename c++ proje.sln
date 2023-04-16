@@ -1,31 +1,219 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.3.32929.385
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "c++ proje", "c++ proje\c++ proje.vcxproj", "{3D9685DD-2B4E-4721-A77D-D6E944086D7E}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Debug|x64.ActiveCfg = Debug|x64
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Debug|x64.Build.0 = Debug|x64
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Debug|x86.ActiveCfg = Debug|Win32
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Debug|x86.Build.0 = Debug|Win32
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Release|x64.ActiveCfg = Release|x64
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Release|x64.Build.0 = Release|x64
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Release|x86.ActiveCfg = Release|Win32
-		{3D9685DD-2B4E-4721-A77D-D6E944086D7E}.Release|x86.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {9B5DCF40-A2AF-4081-9DF5-CB5C0E705273}
-	EndGlobalSection
-EndGlobal
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+struct Book {
+    string title;
+    string author;
+    string isbn;
+};
+
+struct User {
+    string username;
+    string password;
+};
+
+void addUserToFile(const User& user) {
+    ofstream outputFile("users.txt", ios::app);
+    outputFile << user.username << "," << user.password << endl;
+    outputFile.close();
+    cout << "THE USER HAS BEEN REGISTERED: " << user.username << endl;
+}
+
+bool checkUserCredentials(const string& username, const string& password) {
+    ifstream inputFile("users.txt");
+    string line;
+    while (getline(inputFile, line)) {
+        size_t pos = line.find(",");
+        string savedUsername = line.substr(0, pos);
+        string savedPassword = line.substr(pos + 1);
+        if (username == savedUsername && password == savedPassword) {
+            inputFile.close();
+            return true;
+        }
+    }
+    inputFile.close();
+    return false;
+}
+
+vector<Book> readBooksFromFile() {
+    vector<Book> books;
+    ifstream inputFile("books.txt");
+    string line;
+    while (getline(inputFile, line)) {
+        Book book;
+        size_t pos1 = line.find(",");
+        book.title = line.substr(0, pos1);
+        size_t pos2 = line.find(",", pos1 + 1);
+        book.author = line.substr(pos1 + 1, pos2 - pos1 - 1);
+        book.isbn = line.substr(pos2 + 1);
+        books.push_back(book);
+    }
+    inputFile.close();
+    return books;
+}
+
+void writeBooksToFile(const vector<Book>& books) {
+    ofstream outputFile("books.txt", ios::trunc);
+    for (const Book& book : books) {
+        outputFile << book.title << "," << book.author << "," << book.isbn << endl;
+    }
+    outputFile.close();
+}
+
+void addBook(vector<Book>& books) {
+    Book newBook;
+
+    cout << "BOOK NAME: ";
+    getline(cin, newBook.title);
+
+    cout << "AUTHOR'S NAME:";
+    getline(cin, newBook.author);
+
+    cout << "ISBN: ";
+    getline(cin, newBook.isbn);
+
+    books.push_back(newBook);
+    writeBooksToFile(books);
+
+    cout << "THE BOOK WAS ADDED SUCCESSFULLY " << newBook.title << endl;
+}
+
+void listBooks(const vector<Book>& books) {
+    for (const Book& book : books) {
+        cout << book.title << " - " << book.author << " - " << book.isbn << endl;
+    }
+}
+
+int findBookIndex(const vector<Book>& books, const string& title) {
+    for (int i = 0; i < books.size(); i++) {
+        if (books[i].title == title) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void borrowBook(vector<Book>& books) {
+    string title;
+    cout << "ENTER THE NAME OF THE BOOK YOU WANT TO BUY: ";
+    getline(cin, title);
+
+    int index = findBookIndex(books, title);
+    if (index == -1) {
+        cout << "THE BOOK COULD NOT BE FOUND" << title << endl;
+    }
+    else {
+        cout << "THE BOOK WAS PURCHASED " << title << endl;
+        books.erase(books.begin() + index);
+        writeBooksToFile(books);
+    }
+}
+
+void updateBook(vector<Book>& books) {
+    string title;
+    cout << "ENTER THE NAME OF THE BOOK YOU WANT TO UPDATE ";
+    getline(cin, title);
+    int index = findBookIndex(books, title);
+    if (index == -1) {
+        cout << "THE BOOK COULD NOT BE FOUND " << title << endl;
+    }
+    else {
+        cout << "ENTER THE BOOK INFORMATION: " << endl;
+        Book updatedBook;
+
+        cout << "THE NAME OF THE NEW BOOK: ";
+        getline(cin, updatedBook.title);
+
+        cout << "THE AUTHOR'S NAME OF THE NEW BOOK: ";
+        getline(cin, updatedBook.author);
+
+        cout << "THE ISBN OF THE NEW BOOK: ";
+        getline(cin, updatedBook.isbn);
+
+        books[index] = updatedBook;
+        writeBooksToFile(books);
+
+        cout << "THE BOOK HAS BEEN SUCCESSFULLY UPDATED" << updatedBook.title << endl;
+    }
+}
+
+void deleteBook(vector<Book>& books) {
+    string title;
+    cout << "ENTER THE NAME OF THE BOOK YOU WANT TO DELETE: ";
+    getline(cin, title);
+    int index = findBookIndex(books, title);
+    if (index == -1) {
+        cout << "THE BOOK COULD NOT BE FOUND " << title << endl;
+    }
+    else {
+        cout << "THE BOOK WAS DELETED " << title << endl;
+        books.erase(books.begin() + index);
+        writeBooksToFile(books);
+    }
+}
+
+int main() {
+    vector<Book> books = readBooksFromFile();
+    User user;
+    cout << "USERNAME:";
+    getline(cin, user.username);
+
+    cout << "PASSWORD:";
+    getline(cin, user.password);
+
+    addUserToFile(user);
+
+    if (!checkUserCredentials(user.username, user.password)) {
+        cout << "INCORRECT USERNAME OR PASSWORD" << endl;
+        cout << "TRY AGAIN!" << endl;
+        return 1;
+    }
+
+    int choice;
+    do {
+        cout << "-------------------" << endl;
+        cout << "HOW CAN I HELP YOU?" << endl;
+        cout << "-------------------" << endl;
+        cout << "1. ADD BOOK" << endl;
+        cout << "2. DISPLAY BOOKS" << endl;
+        cout << "3. BUY BOOK" << endl;
+        cout << "4. UPDATE BOOK" << endl;
+        cout << "5. DELETE BOOK" << endl;
+        cout << "0. EXIT" << endl;
+        cout << "-------------------" << endl;
+        cout << "==> ";
+
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+        case 1:
+            addBook(books);
+            break;
+        case 2:
+            listBooks(books);
+            break;
+        case 3:
+            borrowBook(books);
+            break;
+        case 4:
+            updateBook(books);
+            break;
+        case 5:
+            deleteBook(books);
+            break;
+        case 0:
+            cout << "THE PROGRAM HAS BEEN TERMINATED." << endl;
+            break;
+        default:
+            cout << "INVALID ELECTION!" << endl;
+            break;
+        }
+    } while (choice != 0);
+
+    return 0;
+}
