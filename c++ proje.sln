@@ -9,6 +9,7 @@ struct Book {
     string title;
     string author;
     string isbn;
+    string genre;
 };
 
 struct User {
@@ -20,7 +21,7 @@ void addUserToFile(const User& user) {
     ofstream outputFile("users.txt", ios::app);
     outputFile << user.username << "," << user.password << endl;
     outputFile.close();
-    cout << "THE USER HAS BEEN REGISTERED: " << user.username << endl;
+    cout << "The user has been registered: " << "'" << user.username << "'" << endl;
 }
 
 bool checkUserCredentials(const string& username, const string& password) {
@@ -49,17 +50,20 @@ vector<Book> readBooksFromFile() {
         book.title = line.substr(0, pos1);
         size_t pos2 = line.find(",", pos1 + 1);
         book.author = line.substr(pos1 + 1, pos2 - pos1 - 1);
-        book.isbn = line.substr(pos2 + 1);
+        size_t pos3 = line.find(",", pos2 + 1);
+        book.isbn = line.substr(pos2 + 1, pos3 - pos2 - 1);
+        book.genre = line.substr(pos3 + 1);
         books.push_back(book);
     }
     inputFile.close();
+
     return books;
 }
 
 void writeBooksToFile(const vector<Book>& books) {
     ofstream outputFile("books.txt", ios::trunc);
     for (const Book& book : books) {
-        outputFile << book.title << "," << book.author << "," << book.isbn << endl;
+        outputFile << book.title << "," << book.author << "," << book.isbn << "," << book.genre << endl;
     }
     outputFile.close();
 }
@@ -67,24 +71,27 @@ void writeBooksToFile(const vector<Book>& books) {
 void addBook(vector<Book>& books) {
     Book newBook;
 
-    cout << "BOOK NAME: ";
+    cout << "Book Name: ";
     getline(cin, newBook.title);
 
-    cout << "AUTHOR'S NAME:";
+    cout << "Author's Name:";
     getline(cin, newBook.author);
 
     cout << "ISBN: ";
     getline(cin, newBook.isbn);
 
+    cout << "Book Genre: ";
+    getline(cin, newBook.genre);
+
     books.push_back(newBook);
     writeBooksToFile(books);
 
-    cout << "THE BOOK WAS ADDED SUCCESSFULLY " << newBook.title << endl;
+    cout << "The book was added successfully." << "'" << newBook.title << "'" << endl;
 }
 
 void listBooks(const vector<Book>& books) {
     for (const Book& book : books) {
-        cout << book.title << " - " << book.author << " - " << book.isbn << endl;
+        cout << book.title << " - " << book.author << " - " << book.isbn << " - " << book.genre << endl;
     }
 }
 
@@ -99,15 +106,15 @@ int findBookIndex(const vector<Book>& books, const string& title) {
 
 void borrowBook(vector<Book>& books) {
     string title;
-    cout << "ENTER THE NAME OF THE BOOK YOU WANT TO BUY: ";
+    cout << "Enter the name o f the book you want buy: ";
     getline(cin, title);
 
     int index = findBookIndex(books, title);
     if (index == -1) {
-        cout << "THE BOOK COULD NOT BE FOUND" << title << endl;
+        cout << "The book could not be found." << "'" << title << "'" << endl;
     }
     else {
-        cout << "THE BOOK WAS PURCHASED " << title << endl;
+        cout << "The book was purchased." << "'" << title << "'" << endl;
         books.erase(books.begin() + index);
         writeBooksToFile(books);
     }
@@ -115,42 +122,42 @@ void borrowBook(vector<Book>& books) {
 
 void updateBook(vector<Book>& books) {
     string title;
-    cout << "ENTER THE NAME OF THE BOOK YOU WANT TO UPDATE ";
+    cout << "Enter the name of the book you want to update: ";
     getline(cin, title);
     int index = findBookIndex(books, title);
     if (index == -1) {
-        cout << "THE BOOK COULD NOT BE FOUND " << title << endl;
+        cout << "The book could not be found." << title << endl;
     }
     else {
-        cout << "ENTER THE BOOK INFORMATION: " << endl;
+        cout << "Enter the book information: " << endl;
         Book updatedBook;
 
-        cout << "THE NAME OF THE NEW BOOK: ";
+        cout << "The name of the new book: ";
         getline(cin, updatedBook.title);
 
-        cout << "THE AUTHOR'S NAME OF THE NEW BOOK: ";
+        cout << "The author's name of the new book: ";
         getline(cin, updatedBook.author);
 
-        cout << "THE ISBN OF THE NEW BOOK: ";
+        cout << "The ISBN of the new book: ";
         getline(cin, updatedBook.isbn);
 
         books[index] = updatedBook;
         writeBooksToFile(books);
 
-        cout << "THE BOOK HAS BEEN SUCCESSFULLY UPDATED" << updatedBook.title << endl;
+        cout << "The book has been successfully updated." << updatedBook.title << endl;
     }
 }
 
 void deleteBook(vector<Book>& books) {
     string title;
-    cout << "ENTER THE NAME OF THE BOOK YOU WANT TO DELETE: ";
+    cout << "Enter the name of the bookyou want to delete: ";
     getline(cin, title);
     int index = findBookIndex(books, title);
     if (index == -1) {
-        cout << "THE BOOK COULD NOT BE FOUND " << title << endl;
+        cout << "The book could not be found." << title << endl;
     }
     else {
-        cout << "THE BOOK WAS DELETED " << title << endl;
+        cout << "The book was deleted." << title << endl;
         books.erase(books.begin() + index);
         writeBooksToFile(books);
     }
@@ -159,17 +166,17 @@ void deleteBook(vector<Book>& books) {
 int main() {
     vector<Book> books = readBooksFromFile();
     User user;
-    cout << "USERNAME:";
+    cout << "Username: ";
     getline(cin, user.username);
 
-    cout << "PASSWORD:";
+    cout << "Password: ";
     getline(cin, user.password);
 
     addUserToFile(user);
 
     if (!checkUserCredentials(user.username, user.password)) {
-        cout << "INCORRECT USERNAME OR PASSWORD" << endl;
-        cout << "TRY AGAIN!" << endl;
+        cout << "Incorrect username or password." << endl;
+        cout << "Try again!" << endl;
         return 1;
     }
 
@@ -178,12 +185,12 @@ int main() {
         cout << "-------------------" << endl;
         cout << "HOW CAN I HELP YOU?" << endl;
         cout << "-------------------" << endl;
-        cout << "1. ADD BOOK" << endl;
-        cout << "2. DISPLAY BOOKS" << endl;
-        cout << "3. BUY BOOK" << endl;
-        cout << "4. UPDATE BOOK" << endl;
-        cout << "5. DELETE BOOK" << endl;
-        cout << "0. EXIT" << endl;
+        cout << "1. Add Book" << endl;
+        cout << "2. Display Books" << endl;
+        cout << "3. Buy Book" << endl;
+        cout << "4. Update Book" << endl;
+        cout << "5. Delete Book" << endl;
+        cout << "0. Exit" << endl;
         cout << "-------------------" << endl;
         cout << "==> ";
 
@@ -207,10 +214,10 @@ int main() {
             deleteBook(books);
             break;
         case 0:
-            cout << "THE PROGRAM HAS BEEN TERMINATED." << endl;
+            cout << "The program has been terminated." << endl;
             break;
         default:
-            cout << "INVALID ELECTION!" << endl;
+            cout << "Invalid election!" << endl;
             break;
         }
     } while (choice != 0);
