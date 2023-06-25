@@ -1,2 +1,0 @@
-# kutuphane-sistemi
-# bookstore-management
